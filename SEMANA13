@@ -1,0 +1,129 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+    
+    // Constantes para las opciones del menú
+    private static final int AGREGAR_PRODUCTO = 1;
+    private static final int PAGAR = 2;
+    private static final int SALIR = 3;
+    private static final double IMPUESTO = 0.16; // 16% de impuesto
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Double> carrito = new ArrayList<>();
+        int opcion;
+        
+        do {
+            mostrarMenu();
+            opcion = leerOpcion(sc);
+            
+            switch (opcion) {
+                case AGREGAR_PRODUCTO:
+                    agregarProducto(carrito, sc);
+                    break;
+                case PAGAR:
+                    pagar(carrito, sc);
+                    break;
+                case SALIR:
+                    System.out.println("¡Gracias por visitarnos!");
+                    break;
+                default:
+                    System.out.println("Opción no válida. Intente nuevamente.");
+            }
+        } while (opcion != SALIR);
+        
+        sc.close();
+    }
+    
+    static void mostrarMenu() {
+        System.out.println("\n=== MENÚ DE COMPRA ===");
+        System.out.println("1. Agregar producto");
+        System.out.println("2. Pagar");
+        System.out.println("3. Salir");
+        System.out.print("Seleccione una opción: ");
+    }
+    
+    static int leerOpcion(Scanner sc) {
+        while (!sc.hasNextInt()) {
+            System.out.println("Por favor, ingrese un número válido.");
+            sc.next(); // Limpiar el buffer
+            System.out.print("Seleccione una opción: ");
+        }
+        return sc.nextInt();
+    }
+    
+    static void agregarProducto(List<Double> carrito, Scanner sc) {
+        System.out.print("Ingrese el precio del producto: ");
+        
+        while (!sc.hasNextDouble()) {
+            System.out.println("Por favor, ingrese un precio válido.");
+            sc.next(); // Limpiar el buffer
+            System.out.print("Ingrese el precio del producto: ");
+        }
+        
+        double precio = sc.nextDouble();
+        
+        if (precio <= 0) {
+            System.out.println("El precio debe ser mayor a cero.");
+            return;
+        }
+        
+        carrito.add(precio);
+        System.out.println("Producto agregado: $" + precio);
+        System.out.println("Total parcial: $" + calcularSubtotal(carrito));
+    }
+    
+    static double calcularSubtotal(List<Double> carrito) {
+        double subtotal = 0;
+        for (double precio : carrito) {
+            subtotal += precio;
+        }
+        return subtotal;
+    }
+    
+    static double total(double base, double imp) {
+        return base + (base * imp);
+    }
+    
+    static boolean validarCorreo(String correo) {
+        return correo.contains("@") && correo.contains(".") && correo.length() >= 5;
+    }
+    
+    static void confirmarCompra(String correo, double total) {
+        System.out.println("\n=== COMPRA CONFIRMADA ===");
+        System.out.println("Correo: " + correo);
+        System.out.println("Total a pagar: $" + String.format("%.2f", total));
+        System.out.println("Factura enviada a su correo electrónico.");
+    }
+    
+    static void pagar(List<Double> carrito, Scanner sc) {
+        if (carrito.isEmpty()) {
+            System.out.println("El carrito está vacío. Agregue productos primero.");
+            return;
+        }
+        
+        double subtotal = calcularSubtotal(carrito);
+        double totalConImpuesto = total(subtotal, IMPUESTO);
+        
+        System.out.println("\n=== RESUMEN DE COMPRA ===");
+        System.out.println("Productos en carrito: " + carrito.size());
+        System.out.println("Subtotal: $" + String.format("%.2f", subtotal));
+        System.out.println("Impuesto (" + (IMPUESTO * 100) + "%): $" + 
+                          String.format("%.2f", subtotal * IMPUESTO));
+        System.out.println("Total: $" + String.format("%.2f", totalConImpuesto));
+        
+        sc.nextLine(); // Limpiar buffer
+        System.out.print("Ingrese su correo electrónico para confirmar: ");
+        String correo = sc.nextLine();
+        
+        if (!validarCorreo(correo)) {
+            System.out.println("Correo electrónico no válido. Operación cancelada.");
+            return;
+        }
+        
+        confirmarCompra(correo, totalConImpuesto);
+        carrito.clear(); // Vaciar carrito después del pago
+    }
+}
